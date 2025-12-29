@@ -337,7 +337,7 @@
             useEffect(() => { loadData(); }, []);
 
             const handleDelete = async (id) => {
-                if(!confirm('確定刪除？')) return;
+                if(!confirm('確定刪除這條祝福嗎？')) return;
                 setLoading(true);
                 await api.deleteBlessing(id);
                 await loadData();
@@ -364,7 +364,7 @@
             return (
                 <div className="min-h-screen bg-slate-50">
                     <header className="bg-white shadow px-6 py-4 flex justify-between items-center sticky top-0 z-10">
-                        <h1 className="text-xl font-bold flex items-center gap-2"><i data-lucide="settings"></i> 後台管理 {loading && <span className="text-sm text-blue-500">(更新中...)</span>}</h1>
+                        <h1 className="text-xl font-bold flex items-center gap-2"><i data-lucide="settings"></i> 後台管理 {loading && <span className="text-sm text-blue-500 font-normal">(更新中...)</span>}</h1>
                         <div className="flex gap-2">
                             <button onClick={() => setShowPwdModal(true)} className="px-4 py-2 bg-slate-100 rounded hover:bg-slate-200 text-sm">修改密碼</button>
                             <button onClick={() => setView('menu')} className="px-4 py-2 bg-red-50 text-red-600 rounded hover:bg-red-100 text-sm flex items-center gap-1"><i data-lucide="log-out" width="16"></i> 登出</button>
@@ -383,15 +383,15 @@
                                 </thead>
                                 <tbody className="divide-y divide-gray-200">
                                     {data.map(item => (
-                                        <tr key={item.id}>
+                                        <tr key={item.id} className="hover:bg-slate-50 transition-colors">
                                             {editId === item.id ? (
                                                 <>
-                                                    <td className="px-6 py-4"><input className="border rounded p-1 w-full" value={editForm.sender} onChange={e=>setEditForm({...editForm, sender:e.target.value})} /></td>
-                                                    <td className="px-6 py-4"><input className="border rounded p-1 w-full" value={editForm.graduate} onChange={e=>setEditForm({...editForm, graduate:e.target.value})} /></td>
-                                                    <td className="px-6 py-4"><input className="border rounded p-1 w-full" value={editForm.message} onChange={e=>setEditForm({...editForm, message:e.target.value})} /></td>
+                                                    <td className="px-6 py-4"><input className="w-full border px-2 py-1 rounded focus:ring-2 focus:ring-blue-500 outline-none" value={editForm.sender} onChange={e=>setEditForm({...editForm, sender:e.target.value})} /></td>
+                                                    <td className="px-6 py-4"><input className="w-full border px-2 py-1 rounded focus:ring-2 focus:ring-blue-500 outline-none" value={editForm.graduate} onChange={e=>setEditForm({...editForm, graduate:e.target.value})} /></td>
+                                                    <td className="px-6 py-4"><input className="w-full border px-2 py-1 rounded focus:ring-2 focus:ring-blue-500 outline-none" value={editForm.message} onChange={e=>setEditForm({...editForm, message:e.target.value})} /></td>
                                                     <td className="px-6 py-4 text-right space-x-2">
-                                                        <button onClick={handleSave} className="text-green-600"><i data-lucide="save" width="18"></i></button>
-                                                        <button onClick={()=>setEditId(null)} className="text-gray-500"><i data-lucide="x" width="18"></i></button>
+                                                        <button onClick={handleSave} className="text-green-600 hover:text-green-800" title="儲存"><i data-lucide="save" width="20"></i></button>
+                                                        <button onClick={()=>setEditId(null)} className="text-gray-500 hover:text-gray-700" title="取消"><i data-lucide="x" width="20"></i></button>
                                                     </td>
                                                 </>
                                             ) : (
@@ -400,13 +400,16 @@
                                                     <td className="px-6 py-4 text-blue-600">{item.graduate}</td>
                                                     <td className="px-6 py-4 text-gray-600">{item.message}</td>
                                                     <td className="px-6 py-4 text-right space-x-3">
-                                                        <button onClick={()=>{setEditId(item.id); setEditForm(item);}} className="text-indigo-600"><i data-lucide="edit" width="18"></i></button>
-                                                        <button onClick={()=>handleDelete(item.id)} className="text-red-600"><i data-lucide="trash-2" width="18"></i></button>
+                                                        <button onClick={()=>{setEditId(item.id); setEditForm(item);}} className="text-indigo-600 hover:text-indigo-800" title="修改"><i data-lucide="edit" width="18"></i></button>
+                                                        <button onClick={()=>handleDelete(item.id)} className="text-red-600 hover:text-red-800" title="刪除"><i data-lucide="trash-2" width="18"></i></button>
                                                     </td>
                                                 </>
                                             )}
                                         </tr>
                                     ))}
+                                    {data.length === 0 && !loading && (
+                                        <tr><td colSpan="4" className="text-center py-10 text-gray-400">目前沒有祝福留言</td></tr>
+                                    )}
                                 </tbody>
                             </table>
                         </div>
@@ -417,8 +420,8 @@
                                 <h3 className="text-lg font-bold mb-4">修改密碼</h3>
                                 <input type="text" className="w-full border p-2 rounded mb-4" placeholder="新密碼" value={newPwd} onChange={e=>setNewPwd(e.target.value)} />
                                 <div className="flex justify-end gap-2">
-                                    <button onClick={()=>setShowPwdModal(false)} className="px-4 py-2 text-gray-600">取消</button>
-                                    <button onClick={handleChangePwd} className="px-4 py-2 bg-blue-600 text-white rounded">確認</button>
+                                    <button onClick={()=>setShowPwdModal(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">取消</button>
+                                    <button onClick={handleChangePwd} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">確認</button>
                                 </div>
                             </div>
                         </div>
