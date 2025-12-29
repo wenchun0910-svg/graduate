@@ -1,0 +1,481 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>長安國小畢業祝福</title>
+    <style>
+        :root {
+            --primary-color: #4a90e2;
+            --accent-color: #ff6b6b;
+            --bg-gradient: linear-gradient(135deg, #fdfbfb 0%, #ebedee 100%);
+            --glass-bg: rgba(255, 255, 255, 0.85);
+            --shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
+        }
+
+        body {
+            font-family: "Microsoft JhengHei", "Heiti TC", sans-serif;
+            margin: 0;
+            padding: 0;
+            background: var(--bg-gradient);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden; /* 防止整個頁面滾動 */
+        }
+
+        /* 標題區 */
+        header {
+            text-align: center;
+            padding: 20px;
+            background: #fff;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            z-index: 10;
+        }
+
+        h1 {
+            margin: 0;
+            color: #333;
+            letter-spacing: 2px;
+            font-size: 2rem;
+        }
+
+        /* 主容器：左邊輸入，右邊展示 */
+        .container {
+            display: flex;
+            flex: 1;
+            padding: 20px;
+            gap: 20px;
+            height: calc(100vh - 100px);
+            max-width: 1400px;
+            margin: 0 auto;
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        /* 左側：表單區 */
+        .input-section {
+            flex: 1;
+            background: var(--glass-bg);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            backdrop-filter: blur(4px);
+            max-width: 400px;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input, textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            font-size: 16px;
+            box-sizing: border-box;
+            transition: 0.3s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: var(--primary-color);
+            outline: none;
+        }
+
+        button.submit-btn {
+            width: 100%;
+            padding: 15px;
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 18px;
+            cursor: pointer;
+            transition: 0.3s;
+            font-weight: bold;
+        }
+
+        button.submit-btn:hover {
+            background: #357abd;
+            transform: translateY(-2px);
+        }
+
+        /* 右側：展示區 (循環滑動) */
+        .display-section {
+            flex: 2;
+            background: var(--glass-bg);
+            border-radius: 20px;
+            padding: 20px;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden; /* 隱藏超出範圍的內容 */
+        }
+
+        .scroll-container {
+            position: absolute;
+            width: 95%;
+            /* 初始位置在下方 */
+            top: 100%; 
+            /* 動畫設定由 JS 控制 */
+        }
+
+        .message-card {
+            background: #fff;
+            border-left: 5px solid var(--accent-color);
+            padding: 20px;
+            margin-bottom: 25px;
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+        }
+
+        .msg-header {
+            display: flex;
+            justify-content: space-between;
+            color: #888;
+            font-size: 0.9rem;
+            margin-bottom: 10px;
+        }
+
+        .msg-body {
+            font-size: 1.5rem;
+            color: #333;
+            line-height: 1.6;
+            font-weight: bold;
+        }
+
+        .msg-footer {
+            margin-top: 10px;
+            text-align: right;
+            font-size: 1.1rem;
+            color: var(--primary-color);
+        }
+
+        /* 管理員按鈕 (右下角) */
+        .admin-btn {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: rgba(0,0,0,0.1);
+            color: #fff;
+            border: none;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            cursor: pointer;
+            z-index: 100;
+        }
+        
+        .admin-btn:hover { background: #333; }
+
+        /* Modal 彈窗 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 200;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            width: 90%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+        
+        .admin-table th, .admin-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .btn-del { background: #ff4d4d; color: white; border:none; padding: 5px 10px; cursor: pointer; border-radius: 4px;}
+        .close-modal { float: right; cursor: pointer; font-size: 24px; }
+
+        /* RWD 適應手機 */
+        @media (max-width: 768px) {
+            .container { flex-direction: column; height: auto; overflow: auto;}
+            body { overflow: auto; }
+            .display-section { height: 500px; }
+            .scroll-container { position: relative; top: 0; animation: none; }
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>🎓 長安國小畢業祝福牆</h1>
+</header>
+
+<div class="container">
+    <div class="input-section">
+        <h2 style="text-align:center; margin-bottom: 20px;">送上祝福</h2>
+        <form id="wishForm">
+            <div class="form-group">
+                <label>您的姓名</label>
+                <input type="text" id="guestName" required placeholder="請輸入您的名字">
+            </div>
+            <div class="form-group">
+                <label>畢業生姓名</label>
+                <input type="text" id="targetName" required placeholder="想對誰說...">
+            </div>
+            <div class="form-group">
+                <label>祝福內容</label>
+                <textarea id="message" rows="4" required placeholder="寫下您的祝福..."></textarea>
+            </div>
+            <button type="submit" class="submit-btn" id="submitBtn">送出祝福</button>
+        </form>
+    </div>
+
+    <div class="display-section" id="displayArea">
+        <div class="scroll-container" id="scrollContainer">
+            <div class="message-card">
+                <div class="msg-body">載入中...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<button class="admin-btn" onclick="openAdmin()">⚙</button>
+
+<div id="adminModal" class="modal">
+    <div class="modal-content">
+        <span class="close-modal" onclick="closeAdmin()">&times;</span>
+        <h2>管理後台</h2>
+        
+        <div id="loginSection">
+            <input type="password" id="adminPass" placeholder="輸入管理密碼" style="width: 70%; display:inline-block;">
+            <button onclick="adminLogin()" style="padding: 10px;">登入</button>
+        </div>
+
+        <div id="adminPanel" style="display:none;">
+            <h3>修改密碼</h3>
+            <input type="password" id="newPass" placeholder="新密碼" style="width: 50%; display:inline-block;">
+            <button onclick="changePass()" style="padding: 10px; background:#4CAF50; color:white; border:none;">修改</button>
+            <hr>
+            <h3>留言管理</h3>
+            <table class="admin-table">
+                <thead><tr><th>姓名</th><th>對象</th><th>內容</th><th>操作</th></tr></thead>
+                <tbody id="adminTableBody"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script>
+    // ================= 設定區 =================
+    // 請將下面的 URL 換成你的 GAS 網頁應用程式網址
+    const GAS_URL = 'YOUR_GAS_URL_HERE'; 
+    // =========================================
+
+    let allData = [];
+    let currentAdminPass = "";
+
+    // 初始化
+    window.onload = function() {
+        fetchData();
+        // 設定自動輪詢，每 30 秒更新一次資料
+        setInterval(fetchData, 30000);
+    };
+
+    // 1. 抓取資料
+    function fetchData() {
+        fetch(GAS_URL + '?action=read')
+            .then(res => res.json())
+            .then(json => {
+                if(json.status === 'success'){
+                    allData = json.data;
+                    renderMessages(allData);
+                }
+            });
+    }
+
+    // 2. 渲染祝福牆 (含動畫邏輯)
+    function renderMessages(data) {
+        const container = document.getElementById('scrollContainer');
+        container.innerHTML = '';
+        
+        // 如果沒資料
+        if(data.length === 0) {
+            container.innerHTML = '<div class="message-card"><div class="msg-body">目前尚無祝福，快來搶頭香！</div></div>';
+            return;
+        }
+
+        // 產生卡片
+        data.forEach(item => {
+            const date = new Date(item.time).toLocaleDateString();
+            const card = `
+                <div class="message-card">
+                    <div class="msg-header">
+                        <span>TO: ${item.target}</span>
+                        <span>${date}</span>
+                    </div>
+                    <div class="msg-body">${item.message}</div>
+                    <div class="msg-footer">- From ${item.guest}</div>
+                </div>
+            `;
+            container.innerHTML += card;
+        });
+
+        startScrollAnimation();
+    }
+
+    // CSS+JS 滾動動畫
+    function startScrollAnimation() {
+        const container = document.getElementById('scrollContainer');
+        const displayHeight = document.getElementById('displayArea').offsetHeight;
+        const contentHeight = container.offsetHeight;
+
+        // 重置動畫
+        container.style.transition = 'none';
+        container.style.top = displayHeight + 'px';
+
+        // 強制重繪
+        void container.offsetWidth;
+
+        // 計算動畫時間 (速度：每秒 50px)
+        const duration = (contentHeight + displayHeight) / 50; 
+
+        container.style.transition = `top ${duration}s linear`;
+        container.style.top = `-${contentHeight}px`;
+
+        // 動畫結束後循環
+        setTimeout(() => {
+            startScrollAnimation();
+        }, duration * 1000);
+    }
+
+    // 3. 送出表單
+    document.getElementById('wishForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const btn = document.getElementById('submitBtn');
+        btn.disabled = true;
+        btn.innerText = "傳送中...";
+
+        const formData = new FormData();
+        formData.append('action', 'add');
+        formData.append('guest', document.getElementById('guestName').value);
+        formData.append('target', document.getElementById('targetName').value);
+        formData.append('message', document.getElementById('message').value);
+
+        fetch(GAS_URL, { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(json => {
+                alert(json.message);
+                document.getElementById('wishForm').reset();
+                fetchData(); // 重新抓取顯示
+                btn.disabled = false;
+                btn.innerText = "送出祝福";
+            })
+            .catch(err => {
+                alert("發生錯誤，請稍後再試");
+                btn.disabled = false;
+            });
+    });
+
+    // --- 管理員功能 ---
+    function openAdmin() { document.getElementById('adminModal').style.display = 'flex'; }
+    function closeAdmin() { document.getElementById('adminModal').style.display = 'none'; }
+
+    function adminLogin() {
+        const pass = document.getElementById('adminPass').value;
+        const formData = new FormData();
+        formData.append('action', 'login');
+        formData.append('password', pass);
+
+        fetch(GAS_URL, { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(json => {
+                if(json.status === 'success') {
+                    currentAdminPass = pass;
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('adminPanel').style.display = 'block';
+                    renderAdminTable();
+                } else {
+                    alert('密碼錯誤');
+                }
+            });
+    }
+
+    function renderAdminTable() {
+        const tbody = document.getElementById('adminTableBody');
+        tbody.innerHTML = '';
+        // 反轉顯示，方便管理最新的
+        [...allData].reverse().forEach((item, index) => {
+             // 原陣列的真實 index 需要計算
+             const realIndex = allData.length - 1 - index;
+             const row = `
+                <tr>
+                    <td>${item.guest}</td>
+                    <td>${item.target}</td>
+                    <td>${item.message.substring(0, 10)}...</td>
+                    <td><button class="btn-del" onclick="deleteMsg(${realIndex})">刪除</button></td>
+                </tr>
+             `;
+             tbody.innerHTML += row;
+        });
+    }
+
+    function deleteMsg(index) {
+        if(!confirm('確定要刪除這條留言嗎？')) return;
+        
+        const formData = new FormData();
+        formData.append('action', 'delete');
+        formData.append('password', currentAdminPass);
+        formData.append('index', index);
+
+        fetch(GAS_URL, { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(json => {
+                alert(json.message);
+                fetchData(); // 更新前端資料
+                // 稍微延遲後更新後台列表 (簡單處理)
+                setTimeout(renderAdminTable, 1000); 
+            });
+    }
+
+    function changePass() {
+        const newPass = document.getElementById('newPass').value;
+        if(!newPass) return alert('請輸入新密碼');
+        
+        const formData = new FormData();
+        formData.append('action', 'change_pass');
+        formData.append('password', currentAdminPass);
+        formData.append('new_password', newPass);
+
+        fetch(GAS_URL, { method: 'POST', body: formData })
+            .then(res => res.json())
+            .then(json => {
+                alert(json.message);
+                if(json.status === 'success') {
+                    currentAdminPass = newPass;
+                    document.getElementById('newPass').value = '';
+                }
+            });
+    }
+
+</script>
+</body>
+</html>
