@@ -23,7 +23,6 @@
             0% { transform: translateY(0); }
             100% { transform: translateY(-50%); }
         }
-        /* 隱藏捲軸但保持功能 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
     </style>
@@ -37,11 +36,10 @@
         // 🔹 請在此處填入您的 Google Apps Script 網址 🔹
         // ==========================================
         const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxkx6Hy2M0BcdufKAtnXqi7MBzfV4RfinpCkdbTKjUiF8Z14viHyX8mc6faoZEftm0c/exec"; 
-        const DEMO_MODE = false; // 如果還沒部署好 GAS，可暫時設為 true 來測試介面
+        const DEMO_MODE = false; 
         // ==========================================
 
         const { useState, useEffect, useRef } = React;
-        const { Send, Edit, Trash2, Settings, LogOut, Monitor, PenTool, Lock, Save, X, GraduationCap } = lucide;
 
         // --- API 服務層 ---
         const api = {
@@ -113,7 +111,7 @@
             const [view, setView] = useState('menu');
             const [isAdmin, setIsAdmin] = useState(false);
 
-            // 初始化圖示
+            // 當畫面切換時，重新繪製 icon
             useEffect(() => {
                 lucide.createIcons();
             }, [view]);
@@ -122,7 +120,7 @@
                 <div className="min-h-screen">
                     {DEMO_MODE && view === 'menu' && (
                         <div className="bg-yellow-100 text-yellow-800 p-2 text-center text-sm">
-                            ⚠️ 目前為展示模式 (資料存在瀏覽器)，請在程式碼中填入 Google Script URL 以啟用連線。
+                            ⚠️ 目前為展示模式，請在程式碼中填入 Google Script URL。
                         </div>
                     )}
                     
@@ -163,7 +161,7 @@
         // 2. 表單頁面
         const FormView = ({ setView }) => {
             const [form, setForm] = useState({ sender: '', graduate: '', message: '' });
-            const [status, setStatus] = useState('idle'); // idle, submitting, success
+            const [status, setStatus] = useState('idle');
 
             const handleSubmit = async (e) => {
                 e.preventDefault();
@@ -217,7 +215,7 @@
             );
         };
 
-        // 3. 展示頁面 (跑馬燈)
+        // 3. 展示頁面
         const DisplayView = ({ setView }) => {
             const [blessings, setBlessings] = useState([]);
             const [loading, setLoading] = useState(true);
@@ -225,7 +223,6 @@
             useEffect(() => {
                 const load = async () => {
                     const data = await api.fetchBlessings();
-                    // 根據數量決定是否重複資料以利循環
                     let displayData = data;
                     if (data.length > 0 && data.length < 5) {
                         displayData = [...data, ...data, ...data, ...data];
@@ -236,11 +233,10 @@
                     setLoading(false);
                 };
                 load();
-                const timer = setInterval(load, 15000); // 每15秒更新一次
+                const timer = setInterval(load, 15000);
                 return () => clearInterval(timer);
             }, []);
 
-            // 計算動畫時間：每則訊息約 5 秒
             const duration = Math.max(30, blessings.length * 4);
 
             return (
@@ -317,7 +313,7 @@
             );
         };
 
-        // 5. 管理後台
+        // 5. 管理後台 (關鍵修正區)
         const AdminDashboardView = ({ setView }) => {
             const [data, setData] = useState([]);
             const [loading, setLoading] = useState(false);
@@ -329,12 +325,18 @@
             const loadData = async () => {
                 setLoading(true);
                 const res = await api.fetchBlessings();
-                // 排序：新的在上面
                 setData(res.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)));
                 setLoading(false);
             };
 
             useEffect(() => { loadData(); }, []);
+
+            // 修正：當資料更新時，重新呼叫 lucide 渲染圖示
+            useEffect(() => {
+                if (!loading) {
+                    lucide.createIcons();
+                }
+            }, [data, loading, editId]);
 
             const handleDelete = async (id) => {
                 if(!confirm('確定刪除這條祝福嗎？')) return;
@@ -364,10 +366,15 @@
             return (
                 <div className="min-h-screen bg-slate-50">
                     <header className="bg-white shadow px-6 py-4 flex justify-between items-center sticky top-0 z-10">
-                        <h1 className="text-xl font-bold flex items-center gap-2"><i data-lucide="settings"></i> 後台管理 {loading && <span className="text-sm text-blue-500 font-normal">(更新中...)</span>}</h1>
+                        <h1 className="text-xl font-bold flex items-center gap-2">
+                            <i data-lucide="settings"></i> 後台管理 
+                            {loading && <span className="text-sm text-blue-500 font-normal">(更新中...)</span>}
+                        </h1>
                         <div className="flex gap-2">
                             <button onClick={() => setShowPwdModal(true)} className="px-4 py-2 bg-slate-100 rounded hover:bg-slate-200 text-sm">修改密碼</button>
-                            <button onClick={() => setView('menu')} className="px-4 py-2 bg-red-50 text-red-600 rounded hover:bg-red-100 text-sm flex items-center gap-1"><i data-lucide="log-out" width="16"></i> 登出</button>
+                            <button onClick={() => setView('menu')} className="px-4 py-2 bg-red-50 text-red-600 rounded hover:bg-red-100 text-sm flex items-center gap-1">
+                                <i data-lucide="log-out" width="16"></i> 登出
+                            </button>
                         </div>
                     </header>
                     <main className="max-w-6xl mx-auto p-6">
@@ -389,9 +396,13 @@
                                                     <td className="px-6 py-4"><input className="w-full border px-2 py-1 rounded focus:ring-2 focus:ring-blue-500 outline-none" value={editForm.sender} onChange={e=>setEditForm({...editForm, sender:e.target.value})} /></td>
                                                     <td className="px-6 py-4"><input className="w-full border px-2 py-1 rounded focus:ring-2 focus:ring-blue-500 outline-none" value={editForm.graduate} onChange={e=>setEditForm({...editForm, graduate:e.target.value})} /></td>
                                                     <td className="px-6 py-4"><input className="w-full border px-2 py-1 rounded focus:ring-2 focus:ring-blue-500 outline-none" value={editForm.message} onChange={e=>setEditForm({...editForm, message:e.target.value})} /></td>
-                                                    <td className="px-6 py-4 text-right space-x-2">
-                                                        <button onClick={handleSave} className="text-green-600 hover:text-green-800" title="儲存"><i data-lucide="save" width="20"></i></button>
-                                                        <button onClick={()=>setEditId(null)} className="text-gray-500 hover:text-gray-700" title="取消"><i data-lucide="x" width="20"></i></button>
+                                                    <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                                                        <button onClick={handleSave} className="bg-green-100 text-green-700 px-3 py-1 rounded hover:bg-green-200 text-sm font-bold flex items-center gap-1 inline-flex">
+                                                            <i data-lucide="save" width="14"></i> 儲存
+                                                        </button>
+                                                        <button onClick={()=>setEditId(null)} className="bg-gray-100 text-gray-700 px-3 py-1 rounded hover:bg-gray-200 text-sm font-bold flex items-center gap-1 inline-flex">
+                                                            <i data-lucide="x" width="14"></i> 取消
+                                                        </button>
                                                     </td>
                                                 </>
                                             ) : (
@@ -399,9 +410,13 @@
                                                     <td className="px-6 py-4">{item.sender}</td>
                                                     <td className="px-6 py-4 text-blue-600">{item.graduate}</td>
                                                     <td className="px-6 py-4 text-gray-600">{item.message}</td>
-                                                    <td className="px-6 py-4 text-right space-x-3">
-                                                        <button onClick={()=>{setEditId(item.id); setEditForm(item);}} className="text-indigo-600 hover:text-indigo-800" title="修改"><i data-lucide="edit" width="18"></i></button>
-                                                        <button onClick={()=>handleDelete(item.id)} className="text-red-600 hover:text-red-800" title="刪除"><i data-lucide="trash-2" width="18"></i></button>
+                                                    <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
+                                                        <button onClick={()=>{setEditId(item.id); setEditForm(item);}} className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded hover:bg-indigo-100 text-sm font-bold flex items-center gap-1 inline-flex">
+                                                            <i data-lucide="edit" width="14"></i> 修改
+                                                        </button>
+                                                        <button onClick={()=>handleDelete(item.id)} className="bg-red-50 text-red-600 px-3 py-1 rounded hover:bg-red-100 text-sm font-bold flex items-center gap-1 inline-flex">
+                                                            <i data-lucide="trash-2" width="14"></i> 刪除
+                                                        </button>
                                                     </td>
                                                 </>
                                             )}
@@ -430,6 +445,11 @@
             );
         };
 
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
     </script>
