@@ -3,455 +3,922 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>長安國小畢業祝福留言板</title>
-    <!-- 引入 React 和 Babel (解析 JSX) -->
-    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <!-- 引入 Tailwind CSS (美化樣式) -->
-    <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 引入圖示庫 Lucide -->
-    <script src="https://unpkg.com/lucide@latest"></script>
-    
-    <!-- 自定義樣式 -->
+    <title>臺中市長安國小第十七屆 - 畢業祝福牆</title>
     <style>
-        body { font-family: "Microsoft JhengHei", "Heiti TC", sans-serif; }
-        .marquee-container { position: relative; height: 100%; overflow: hidden; }
-        .marquee-content { animation: marquee-scroll 20s linear infinite; }
-        .marquee-content:hover { animation-play-state: paused; }
-        @keyframes marquee-scroll {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-50%); }
+        /* ================= 長安國小 中式古典風格配色與全域變數 ================= */
+        :root {
+            --theme-primary: #1E3A8A; /* 青花藍 Porcelain Blue (字體與邊框) */
+            --theme-dark: #0B1D3A;    /* 深藏青 Dark Navy */
+            --theme-accent: #C0392B;  /* 朱紅 Vermilion (保留給落款印章點綴) */
+            --theme-bg: #FDF8F5;      /* 宣紙白 Rice Paper */
+            --theme-gold: #D4AF37;    /* 琉璃金 Imperial Gold */
+            --text-main: #1E3A8A;     /* 主字體顏色改為藍色 */
+            --border-radius: 4px;     /* 中式木作微圓角 */
         }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        body {
+            margin: 0;
+            padding: 0;
+            /* 改用楷體與宋體，呈現中式書法與古典文學氣息 */
+            font-family: 'Kaiti TC', 'BiauKai', 'Noto Serif TC', 'Songti TC', serif;
+            overflow: hidden;
+            background-color: var(--theme-bg);
+            color: var(--text-main);
+            transition: background 0.5s;
+        }
+
+        .hidden-view { display: none !important; }
+
+        /* ---------------- 共用元件：長安校徽 (毛毛蟲吉祥物) ---------------- */
+        .school-logo {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            flex-wrap: wrap; 
+        }
+        .school-logo svg, .custom-logo-img {
+            width: clamp(80px, 15vw, 150px);
+            height: auto;
+            object-fit: contain;
+            filter: drop-shadow(0 4px 0px rgba(139, 0, 0, 0.1));
+        }
+        .school-logo h1 {
+            margin: 0;
+            font-size: clamp(1.3rem, 4vw, 2.2rem);
+            color: var(--theme-primary);
+            letter-spacing: 4px;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        /* ================= 視圖 1：送上祝福表單 (#submit) ================= */
+        #view-submit {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            /* 傳統宣紙與細緻紋理背景 */
+            background-color: var(--theme-bg);
+            background-image: 
+                linear-gradient(rgba(139, 0, 0, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(139, 0, 0, 0.03) 1px, transparent 1px);
+            background-size: 30px 30px;
+            color: var(--text-main);
+            overflow-y: auto;
+            align-items: center;
+            padding: 30px 15px;
+        }
+
+        .form-card {
+            background: white;
+            /* 中式牌匾風格雙線邊框 */
+            border: 4px double var(--theme-primary);
+            border-radius: var(--border-radius);
+            padding: 30px;
+            width: 100%;
+            max-width: 450px;
+            box-shadow: 6px 6px 0px rgba(139, 0, 0, 0.08);
+        }
+
+        .form-card h2 {
+            text-align: center; color: var(--theme-primary); margin-top: 0;
+            border-bottom: 2px solid var(--theme-gold); padding-bottom: 15px; margin-bottom: 25px;
+            letter-spacing: 3px;
+        }
+
+        .form-group { margin-bottom: 20px; }
+        .form-group label { display: block; margin-bottom: 8px; font-weight: bold; color: var(--theme-dark); letter-spacing: 1px;}
+        .form-group input, .form-group textarea {
+            width: 100%; padding: 12px; border: 1px solid #ccc; border-radius: var(--border-radius);
+            font-size: 16px; box-sizing: border-box; background: #fafafa; transition: 0.3s;
+            font-family: inherit;
+        }
+        .form-group input:focus, .form-group textarea:focus {
+            outline: none; border-color: var(--theme-primary);
+            box-shadow: 0 0 0 2px rgba(139, 0, 0, 0.15); background: white;
+        }
+
+        .submit-btn {
+            width: 100%; background: var(--theme-primary); color: var(--theme-bg); 
+            border: 2px solid var(--theme-primary);
+            padding: 15px; border-radius: var(--border-radius); font-size: 1.2rem; font-weight: bold;
+            cursor: pointer; transition: 0.2s; letter-spacing: 3px;
+        }
+        .submit-btn:hover { background: white; color: var(--theme-primary); }
+        .submit-btn:disabled { background: #999; border-color: #999; color: white; cursor: not-allowed; }
+        .back-to-wall { display: block; text-align: center; margin-top: 20px; color: #666; text-decoration: none; font-size: 0.9rem; }
+
+        /* ================= 視圖 2：畢業祝福牆 (#wall) ================= */
+        #view-wall {
+            display: flex; flex-direction: column; height: 100vh;
+            background: var(--theme-bg);
+            position: relative;
+        }
+
+        /* 輪播背景容器 */
+        #bg-carousel {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0;
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
+            transition: background-image 1s ease-in-out;
+            pointer-events: none;
+        }
+        
+        /* 宣紙透光遮罩 */
+        .bg-overlay {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(253, 248, 245, 0.75); /* 宣紙色半透明 */
+            backdrop-filter: blur(4px); 
+            -webkit-backdrop-filter: blur(4px);
+            z-index: 1;
+            pointer-events: none;
+        }
+
+        .wall-header { 
+            text-align: center; padding: 20px 0; z-index: 10; 
+            background: rgba(255, 255, 255, 0.85);
+            border-bottom: 3px double var(--theme-primary);
+        }
+
+        .wall-layout {
+            display: flex; flex: 1; padding: 0 40px 40px 40px; gap: 60px;
+            z-index: 10; height: calc(100vh - 120px); box-sizing: border-box; align-items: center;
+        }
+
+        /* 左側：QRCode 區 */
+        .qr-section {
+            flex: 0.8; max-width: 450px; display: flex; flex-direction: column; 
+            justify-content: center; align-items: center;
+            background: rgba(255, 255, 255, 0.95);
+            border: 3px double var(--theme-primary); 
+            border-radius: var(--border-radius);
+            padding: 15px 20px; text-align: center; /* 大幅減少上下左右留白 */
+            box-shadow: 8px 8px 0px rgba(139, 0, 0, 0.08);
+        }
+        .qr-section h3 { color: var(--theme-primary); font-size: clamp(1.5rem, 4vw, 2.2rem); margin-top: 0; margin-bottom: 5px; letter-spacing: 2px;} /* 減少與下方文字的距離 */
+        .qr-section p { font-size: clamp(1rem, 3vw, 1.3rem); color: var(--theme-dark); margin-bottom: 15px; line-height: 1.4; font-weight: bold;} /* 縮小行距與留白 */
+        
+        /* 調整 QR Code 白色底框與圖片尺寸，讓 QR Code 填滿更多空間 */
+        .qr-box { background: white; padding: 5px; border: 1px solid #ddd; margin-bottom: 5px; } /* 縮小 QR code 白色邊框 */
+        .qr-box img { width: clamp(150px, 35vw, 320px); height: clamp(150px, 35vw, 320px); display: block; }
+
+        /* 右側：輪轉祝福區 (Carousel) */
+        .carousel-section {
+            flex: 1.2; position: relative; height: 100%;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .carousel-container {
+            position: relative; width: 100%; max-width: 800px; min-height: 400px;
+        }
+
+        .carousel-card {
+            position: absolute; top: 50%; left: 0; width: 100%;
+            transform: translateY(-150%) scale(0.85); 
+            opacity: 0;
+            background: rgba(255, 255, 255, 0.95); color: var(--text-main);
+            border: 3px double var(--theme-primary);
+            border-left: 12px solid var(--theme-primary);
+            padding: 40px; border-radius: var(--border-radius);
+            box-shadow: 10px 10px 0px rgba(139, 0, 0, 0.1);
+            transition: opacity 1s ease, transform 1s cubic-bezier(0.25, 1, 0.5, 1);
+            box-sizing: border-box;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .carousel-card.active {
+            opacity: 1; transform: translateY(-50%) scale(1); pointer-events: auto;
+            z-index: 2;
+        }
+
+        .carousel-card.exit {
+            opacity: 0; transform: translateY(50%) scale(0.85); 
+            z-index: 1;
+        }
+        
+        .carousel-card .target { color: var(--theme-primary); font-size: clamp(1.2rem, 3vw, 1.6rem); font-weight: bold; margin-bottom: 20px; border-bottom: 1px solid #ccc; padding-bottom: 10px; letter-spacing: 1px;}
+        .carousel-card .msg { font-size: clamp(1.5rem, 5vw, 2.5rem); line-height: 1.6; font-weight: bold; word-wrap: break-word; color: var(--theme-dark);}
+        
+        /* 寄件人：中式白文印章風格 */
+        .carousel-card .sender { 
+            margin-top: 30px; text-align: right; font-size: clamp(1.1rem, 3.5vw, 1.5rem); 
+            font-weight: bold; 
+        }
+        .carousel-card .sender-stamp {
+            display: inline-block;
+            background-color: var(--theme-accent);
+            color: white; /* 白文印效果 */
+            border: 2px solid var(--theme-accent);
+            padding: 6px 16px;
+            border-radius: 4px;
+            letter-spacing: 2px;
+            box-shadow: 2px 2px 0px rgba(139, 0, 0, 0.2);
+        }
+
+        /* ================= 提示框與管理員 Modal ================= */
+        #toast {
+            position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
+            background: var(--theme-primary); color: white;
+            padding: 15px 30px; border-radius: var(--border-radius); z-index: 2000;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.2);
+            opacity: 0; visibility: hidden; transition: 0.3s;
+            font-weight: bold; font-size: 1.1rem; border: 1px solid var(--theme-gold);
+        }
+        #toast.show { opacity: 1; visibility: visible; top: 40px;}
+
+        .admin-btn {
+            position: fixed; bottom: 20px; right: 20px;
+            background: white; color: var(--theme-primary);
+            border: 2px solid var(--theme-primary); border-radius: 50%; width: 50px; height: 50px;
+            font-size: 20px; cursor: pointer; z-index: 100; transition: 0.3s;
+        }
+        .admin-btn:hover { color: white; background: var(--theme-primary); transform: rotate(90deg); }
+
+        /* 瀏覽人次標籤 */
+        .visitor-count {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            background: rgba(253, 248, 245, 0.85);
+            border: 2px solid var(--theme-primary);
+            color: var(--theme-primary);
+            padding: 8px 15px;
+            border-radius: var(--border-radius);
+            font-weight: bold;
+            z-index: 100;
+            font-size: 1rem;
+            letter-spacing: 2px;
+            box-shadow: 4px 4px 0px rgba(139, 0, 0, 0.1);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(43, 43, 43, 0.8); backdrop-filter: blur(3px);
+            z-index: 1000; justify-content: center; align-items: center;
+        }
+        .modal-content {
+            background: var(--theme-bg); color: var(--text-main); padding: 30px; border-radius: var(--border-radius);
+            border: 3px double var(--theme-primary);
+            width: 90%; max-width: 700px; max-height: 85vh; overflow-y: auto; position: relative;
+        }
+        .close-modal { position: absolute; top: 20px; right: 25px; font-size: 30px; cursor: pointer; color: #888; }
+        .close-modal:hover { color: #000; }
+        
+        .admin-section { margin-bottom: 25px; padding-bottom: 20px; border-bottom: 1px solid #ccc; }
+        .admin-table { width: 100%; border-collapse: collapse; margin-top: 15px; background: white;}
+        .admin-table th, .admin-table td { border: 1px solid #ccc; padding: 10px; text-align: left; }
+        .admin-table th { background: var(--theme-primary); color: white; }
+        .btn-del { background: var(--theme-accent); color: white; border: none; padding: 6px 12px; border-radius: 2px; cursor: pointer; }
+        .btn-del:hover { opacity: 0.8; }
+        
+        .flex-row { display: flex; gap: 10px; align-items: center; margin-bottom: 10px; }
+        .admin-input { padding: 10px; border: 1px solid #ccc; border-radius: 2px; flex: 1; font-size: 16px; font-family: inherit;}
+        .btn-action { padding: 10px 20px; background: var(--theme-primary); color: white; border: none; border-radius: 2px; cursor: pointer; font-family: inherit; font-weight: bold;}
+        
+        /* 響應式排版 Media Queries */
+        @media (max-width: 900px) {
+            .wall-layout { flex-direction: column; overflow-y: auto; padding: 15px; gap: 20px; height: auto; justify-content: flex-start;}
+            #view-wall { height: auto; min-height: 100vh; overflow-y: auto;}
+            .qr-section { margin-bottom: 10px; max-width: 100%; flex: none; padding: 20px;}
+            
+            .carousel-section { flex: none; width: 100%; min-height: 350px; margin-bottom: 50px; display: flex; align-items: flex-start;}
+            .carousel-container { min-height: 350px; }
+            .carousel-card { padding: 25px; border-left-width: 8px; }
+            
+            /* 手機版瀏覽人次改到左上角避免擋住畫面 */
+            .visitor-count {
+                bottom: auto;
+                top: 10px;
+                left: 10px;
+                padding: 5px 10px;
+                font-size: 0.85rem;
+            }
+        }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800">
+<body>
 
-    <div id="root"></div>
+    <div id="toast">提示訊息</div>
 
-    <script type="text/babel">
-        // ==========================================
-        // 🔹 請在此處填入您的 Google Apps Script 網址 🔹
-        // ==========================================
-        const GOOGLE_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxkx6Hy2M0BcdufKAtnXqi7MBzfV4RfinpCkdbTKjUiF8Z14viHyX8mc6faoZEftm0c/exec"; 
-        const DEMO_MODE = false; 
-        // ==========================================
+    <!-- 瀏覽人次顯示區 -->
+    <div id="visitorCountDisplay" class="visitor-count" style="display: none;">累積瀏覽人次：--</div>
 
-        const { useState, useEffect, useRef } = React;
+    <!-- ================= 視圖 1：送上祝福 (手機填寫端) ================= -->
+    <div id="view-submit" class="hidden-view">
+        <div class="school-logo" style="margin-top: 20px;">
+            <!-- 共同 SVG：長安國小 吉祥物毛毛蟲 -->
+            <svg id="defaultLogo1" viewBox="0 0 240 120" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="bodyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#ffffff" />
+                        <stop offset="100%" stop-color="#e6e6e6" />
+                    </linearGradient>
+                </defs>
+                <polygon points="30,40 35,15 45,35" fill="#32CD32"/>
+                <polygon points="60,30 65,10 75,28" fill="#32CD32"/>
+                <polygon points="90,25 95,5 105,25" fill="#32CD32"/>
+                <polygon points="120,25 125,5 135,25" fill="#32CD32"/>
+                <polygon points="150,30 155,10 165,30" fill="#32CD32"/>
+                <path d="M 10,90 C 0,90 0,40 50,30 C 100,20 160,20 190,40 C 230,50 230,90 200,100 C 150,110 50,110 10,90 Z" fill="url(#bodyGrad)" stroke="#cccccc" stroke-width="2"/>
+                <path d="M 20,60 C 20,35 60,25 100,25 C 150,25 180,35 190,50 C 190,65 170,45 100,45 C 50,45 20,70 20,60 Z" fill="#FF8C00"/>
+                <path d="M 180,40 Q 185,15 195,20" stroke="#32CD32" stroke-width="6" fill="none" stroke-linecap="round"/>
+                <path d="M 185,25 L 195,30" stroke="white" stroke-width="2"/>
+                <path d="M 195,45 Q 210,25 215,35" stroke="#32CD32" stroke-width="6" fill="none" stroke-linecap="round"/>
+                <path d="M 205,35 L 213,40" stroke="white" stroke-width="2"/>
+                <circle cx="60" cy="35" r="4.5" fill="#1E90FF"/>
+                <circle cx="90" cy="32" r="4.5" fill="#32CD32"/>
+                <circle cx="120" cy="32" r="4.5" fill="#1E90FF"/>
+                <circle cx="150" cy="38" r="4.5" fill="#32CD32"/>
+                <path d="M 25,85 Q 35,60 45,85" stroke="#FF8C00" stroke-width="6" fill="none" stroke-linecap="round"/>
+                <path d="M 55,90 Q 65,60 75,90" stroke="#FF8C00" stroke-width="6" fill="none" stroke-linecap="round"/>
+                <path d="M 85,92 Q 95,65 105,92" stroke="#FF8C00" stroke-width="6" fill="none" stroke-linecap="round"/>
+                <path d="M 115,92 Q 125,65 135,92" stroke="#FF8C00" stroke-width="6" fill="none" stroke-linecap="round"/>
+                <path d="M 145,90 Q 155,60 165,90" stroke="#FF8C00" stroke-width="6" fill="none" stroke-linecap="round"/>
+                <circle cx="195" cy="65" r="4" fill="black"/>
+                <circle cx="194" cy="64" r="1.5" fill="white"/>
+                <text x="40" y="70" fill="#1E3A8A" font-size="28" font-weight="bold" font-family="cursive" transform="rotate(-10 40 70)">長安</text>
+                <text x="110" y="65" fill="#2E8B57" font-size="16" font-weight="bold" font-family="sans-serif">國小</text>
+            </svg>
+            <img id="customLogo1" class="custom-logo-img" style="display:none;" alt="School Logo">
+            <h1 id="mainTitle1">臺中市長安國小第十七屆<br>畢業祝福</h1>
+        </div>
 
-        // --- API 服務層 ---
-        const api = {
-            fetchBlessings: async () => {
-                if (DEMO_MODE) return JSON.parse(localStorage.getItem('demo_data') || '[]');
+        <div class="form-card">
+            <h2>🎓 寫下您的祝福 🎓</h2>
+            <form id="wishForm">
+                <div class="form-group">
+                    <label>您的姓名 / 稱謂</label>
+                    <input type="text" id="guestName" required placeholder="例如：王小明 / 家長會長">
+                </div>
+                <div class="form-group">
+                    <label>送給哪位畢業生 (或班級)</label>
+                    <input type="text" id="targetName" required placeholder="例如：六年甲班 / 李大華">
+                </div>
+                <div class="form-group">
+                    <label>祝福內容</label>
+                    <textarea id="message" rows="5" required placeholder="寫下期許與祝福..."></textarea>
+                </div>
+                <button type="submit" class="submit-btn" id="submitBtn">送出祝福 🎓</button>
+            </form>
+        </div>
+        <a href="#wall" class="back-to-wall">切換至大螢幕展示牆 (管理員用)</a>
+    </div>
+
+    <!-- ================= 視圖 2：畢業祝福牆 (大螢幕端) ================= -->
+    <div id="view-wall" class="hidden-view">
+        <!-- 動態背景輪播容器 -->
+        <div id="bg-carousel"></div>
+        <div class="bg-overlay"></div> <!-- 淺色半透明遮罩 -->
+
+        <div class="wall-header">
+            <div class="school-logo">
+                <svg id="defaultLogo2" viewBox="0 0 240 120" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="bodyGrad2" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stop-color="#ffffff" />
+                            <stop offset="100%" stop-color="#e6e6e6" />
+                        </linearGradient>
+                    </defs>
+                    <polygon points="30,40 35,15 45,35" fill="#32CD32"/>
+                    <polygon points="60,30 65,10 75,28" fill="#32CD32"/>
+                    <polygon points="90,25 95,5 105,25" fill="#32CD32"/>
+                    <polygon points="120,25 125,5 135,25" fill="#32CD32"/>
+                    <polygon points="150,30 155,10 165,30" fill="#32CD32"/>
+                    <path d="M 10,90 C 0,90 0,40 50,30 C 100,20 160,20 190,40 C 230,50 230,90 200,100 C 150,110 50,110 10,90 Z" fill="url(#bodyGrad2)" stroke="#cccccc" stroke-width="2"/>
+                    <path d="M 20,60 C 20,35 60,25 100,25 C 150,25 180,35 190,50 C 190,65 170,45 100,45 C 50,45 20,70 20,60 Z" fill="#FF8C00"/>
+                    <path d="M 180,40 Q 185,15 195,20" stroke="#32CD32" stroke-width="6" fill="none" stroke-linecap="round"/>
+                    <path d="M 185,25 L 195,30" stroke="white" stroke-width="2"/>
+                    <path d="M 195,45 Q 210,25 215,35" stroke="#32CD32" stroke-width="6" fill="none" stroke-linecap="round"/>
+                    <path d="M 205,35 L 213,40" stroke="white" stroke-width="2"/>
+                    <circle cx="60" cy="35" r="4.5" fill="#1E90FF"/>
+                    <circle cx="90" cy="32" r="4.5" fill="#32CD32"/>
+                    <circle cx="120" cy="32" r="4.5" fill="#1E90FF"/>
+                    <circle cx="150" cy="38" r="4.5" fill="#32CD32"/>
+                    <path d="M 25,85 Q 35,60 45,85" stroke="#FF8C00" stroke-width="6" fill="none" stroke-linecap="round"/>
+                    <path d="M 55,90 Q 65,60 75,90" stroke="#FF8C00" stroke-width="6" fill="none" stroke-linecap="round"/>
+                    <path d="M 85,92 Q 95,65 105,92" stroke="#FF8C00" stroke-width="6" fill="none" stroke-linecap="round"/>
+                    <path d="M 115,92 Q 125,65 135,92" stroke="#FF8C00" stroke-width="6" fill="none" stroke-linecap="round"/>
+                    <path d="M 145,90 Q 155,60 165,90" stroke="#FF8C00" stroke-width="6" fill="none" stroke-linecap="round"/>
+                    <circle cx="195" cy="65" r="4" fill="black"/>
+                    <circle cx="194" cy="64" r="1.5" fill="white"/>
+                    <text x="40" y="70" fill="#1E3A8A" font-size="28" font-weight="bold" font-family="cursive" transform="rotate(-10 40 70)">長安</text>
+                    <text x="110" y="65" fill="#2E8B57" font-size="16" font-weight="bold" font-family="sans-serif">國小</text>
+                </svg>
+                <img id="customLogo2" class="custom-logo-img" style="display:none;" alt="School Logo">
+                <h1 id="mainTitle2">臺中市長安國小第十七屆 畢業祝福牆</h1>
+            </div>
+        </div>
+
+        <div class="wall-layout">
+            <!-- QR Code 區 -->
+            <div class="qr-section">
+                <h3>掃描送祝福 🎓</h3>
+                <p>拿起手機掃描下方 QR Code<br>您的祝福將即時顯示在螢幕上！</p>
+                <div class="qr-box">
+                    <img id="qrImage" src="" alt="掃描送祝福">
+                </div>
+            </div>
+
+            <!-- 輪轉動畫區 (Carousel) -->
+            <div class="carousel-section">
+                <div class="carousel-container" id="carouselContainer">
+                    <div class="carousel-card active" style="text-align:center">
+                        <div class="msg">載入祝福中，請稍候...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 管理員按鈕 -->
+        <button class="admin-btn" onclick="openAdminModal()" title="管理員登入">⚙</button>
+    </div>
+
+    <!-- ================= 管理員 Modal ================= -->
+    <div id="adminModal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" onclick="closeAdminModal()">&times;</span>
+            <h2 style="color: var(--ca-blue); border-bottom: 2px solid #eee; padding-bottom: 10px; margin-top: 0;">後台管理</h2>
+            
+            <!-- 登入區塊 -->
+            <div id="loginSection">
+                <p>請輸入管理員密碼以進入設定 (預設: 1234)</p>
+                <div class="flex-row">
+                    <input type="password" id="adminPassword" class="admin-input" placeholder="請輸入密碼">
+                    <button class="btn-action" onclick="verifyLogin()">登入</button>
+                </div>
+            </div>
+
+            <!-- 管理區塊 (登入後顯示) -->
+            <div id="adminPanel" style="display: none;">
+                <div class="admin-section">
+                    <h3>🗑️ 留言管理</h3>
+                    <div style="max-height: 300px; overflow-y: auto;">
+                        <table class="admin-table">
+                            <thead><tr><th>送件人</th><th>對象</th><th>內容</th><th>操作</th></tr></thead>
+                            <tbody id="adminTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="admin-section">
+                    <h3>🔐 修改密碼</h3>
+                    <div class="flex-row">
+                        <input type="password" id="newPassword" class="admin-input" placeholder="輸入新密碼">
+                        <button class="btn-action" style="background:#10b981;" onclick="changePassword()">確認修改</button>
+                    </div>
+                </div>
+
+                <div class="admin-section" style="border-bottom: none;">
+                    <h3>🖼️ 輪播背景設定 (淺色系)</h3>
+                    <p style="font-size: 0.9rem; color: #666; margin-top: 0;">請輸入圖片網址或檔案名稱。<br>
+                    <span style="color:#ef4444; font-weight:bold;">⚠️ 警告：Google Drive 近期封鎖了外部網站讀取圖片，高機率會一片空白！</span><br>
+                    <span style="color:#10b981;">💡 最佳作法：請將圖片上傳到這個 GitHub 資料夾 (例如命名為 <code>bg1.jpg</code>)，然後在此處直接輸入 <code>bg1.jpg</code> 即可。</span></p>
+                    <div id="bgInputsContainer">
+                        <!-- JS 將動態產生 7 個輸入框 -->
+                    </div>
+                    <button class="btn-action" style="background:#8b5cf6; margin-top: 15px;" onclick="saveBackgrounds()">💾 儲存背景設定</button>
+                </div>
+
+                <!-- 學校資訊設定 -->
+                <div class="admin-section" style="border-bottom: none; border-top: 1px solid #ccc; padding-top: 20px; margin-top: 20px;">
+                    <h3>🏫 學校資訊設定</h3>
+                    <div class="flex-row">
+                        <span style="width: 80px; color:#666; font-weight: bold;">標題文字</span>
+                        <input type="text" id="adminCustomTitle" class="admin-input" placeholder="例如：臺中市長安國小第十七屆">
+                    </div>
+                    <div class="flex-row">
+                        <span style="width: 80px; color:#666; font-weight: bold;">Logo 圖片</span>
+                        <input type="text" id="adminCustomLogo" class="admin-input" placeholder="圖片網址 (留白則使用預設毛毛蟲)">
+                    </div>
+                    <button class="btn-action" style="background:#f59e0b; margin-top: 15px;" onclick="saveSchoolInfo()">💾 儲存資訊設定</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Firebase SDK -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, onAuthStateChanged, signInWithCustomToken } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, collection, addDoc, onSnapshot, doc, getDoc, setDoc, deleteDoc, increment } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // ================= 0. 介面與路由控制 (移至最前面，確保畫面一定會顯示) =================
+        window.showToast = function(msg) {
+            const toast = document.getElementById('toast');
+            toast.innerText = msg;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        let messagesData = [];
+        let carouselInterval = null;
+        let activeCardIndex = 0;
+
+        function handleRouting() {
+            const hash = window.location.hash || '#wall';
+            const viewSubmit = document.getElementById('view-submit');
+            const viewWall = document.getElementById('view-wall');
+
+            if (hash === '#submit') {
+                viewWall.classList.add('hidden-view');
+                viewSubmit.classList.remove('hidden-view');
+                if(carouselInterval) clearInterval(carouselInterval);
+            } else {
+                viewSubmit.classList.add('hidden-view');
+                viewWall.classList.remove('hidden-view');
+                
+                const currentUrl = window.location.href.split('#')[0];
+                const submitUrl = currentUrl + '#submit';
+                // 將產生的圖片解析度從 220x220 提升到 350x350 確保大圖清晰
+                document.getElementById('qrImage').src = `https://api.qrserver.com/v1/create-qr-code/?size=350x350&data=${encodeURIComponent(submitUrl)}&color=1E3A8A`;
+                
+                if(messagesData.length > 0) startCarousel();
+            }
+        }
+        window.addEventListener('hashchange', handleRouting);
+        handleRouting(); // 強制先渲染畫面
+
+        // ================= 1. 系統與 Firebase 初始化 =================
+        // ⚠️ 部署到 GitHub Pages 的關鍵：您必須在這裡填入自己的 Firebase 設定！
+        const myFirebaseConfig = {
+            // 👇 請確保您貼上的設定「沒有」被 // 雙斜線給註解掉
+            // 例如： apiKey: "AIzaSyD-xxxxxxxxxxxx",
+            // 而不是 // apiKey: "AIzaSyD-xxxxxxxxxxxx",
+        };
+        
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'changan-school-app';
+        const MSG_PATH = `artifacts/${appId}/public/data/blessings`;
+        const CONFIG_COLLECTION = `artifacts/${appId}/public/data/config`;
+
+        let app, auth, db, currentUser = null, isAdminLoggedIn = false;
+        
+        let customBgUrls = ["https://images.unsplash.com/photo-1523050854058-8df90110c9f1?q=80&w=2000&auto=format&fit=crop"];
+        let currentBgIndex = 0;
+        let bgRotationInterval = null;
+        let customTitle = "";
+        let customLogo = "";
+
+        // 🟢 新增：網頁一載入就先強制渲染一次預設背景
+        updateWallBackground();
+
+        // 改良版的 Firebase 啟動邏輯 (增強容錯與除錯)
+        let finalConfig = myFirebaseConfig;
+        try {
+            // 嘗試讀取外部環境變數 (若有)
+            if (typeof __firebase_config !== 'undefined' && __firebase_config) {
+                finalConfig = JSON.parse(__firebase_config);
+            }
+        } catch (e) {
+            console.warn("環境變數解析略過，採用手動 myFirebaseConfig 設定");
+        }
+
+        // 檢查設定是否有效 (確保有填寫 apiKey)
+        if (!finalConfig || Object.keys(finalConfig).length === 0 || !finalConfig.apiKey) {
+            console.warn("⚠️ 尚未偵測到有效的 Firebase Config！");
+            setTimeout(() => showToast("⚠️ 請確認 myFirebaseConfig 已經填寫且移除了 // 註解！"), 2500);
+            updateWallBackground(); // 先顯示預設背景
+        } else {
+            try {
+                // 正式啟動
+                app = initializeApp(finalConfig);
+                auth = getAuth(app);
+                db = getFirestore(app);
+                initAuth();
+                console.log("✅ Firebase 初始化成功！");
+            } catch (e) {
+                console.error("Firebase 初始化嚴重錯誤:", e);
+                setTimeout(() => showToast("⚠️ Firebase 啟動失敗，請按 F12 檢查 Console 錯誤！"), 3000);
+                updateWallBackground();
+            }
+        }
+
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
+                }
+            } catch (e) { 
+                console.error("登入驗證錯誤 (Auth Error):", e); 
+                if(e.code === 'auth/admin-restricted-operation' || e.code === 'auth/operation-not-allowed') {
+                    setTimeout(() => showToast("⚠️ 請至 Firebase 後台啟用「匿名登入(Anonymous)」功能！"), 4000);
+                }
+            }
+        }
+
+        if(auth) {
+            onAuthStateChanged(auth, (user) => {
+                if (user) {
+                    currentUser = user;
+                    loadMessages();
+                    initAdminConfig();
+                    listenToBackgrounds();
+                    listenToSchoolInfo(); // 監聽學校資訊
+                    trackAndDisplayVisitor(); // 追蹤並顯示瀏覽人次
+                }
+            });
+        }
+
+        async function initAdminConfig() {
+            if(!currentUser || !db) return;
+            const configRef = doc(db, CONFIG_COLLECTION, 'admin');
+            try {
+                const snap = await getDoc(configRef);
+                if (!snap.exists()) await setDoc(configRef, { password: "1234" });
+            } catch(e) { console.error(e); }
+        }
+
+        function listenToBackgrounds() {
+            if(!currentUser || !db) return;
+            const bgRef = doc(db, CONFIG_COLLECTION, 'backgrounds');
+            onSnapshot(bgRef, (snap) => {
+                if(snap.exists() && snap.data().urls && snap.data().urls.length > 0) {
+                    const validUrls = snap.data().urls.filter(url => url && url.trim() !== '');
+                    if (validUrls.length > 0) customBgUrls = validUrls;
+                }
+                updateWallBackground();
+                if(isAdminLoggedIn) renderBgInputs();
+            });
+        }
+
+        function listenToSchoolInfo() {
+            if(!currentUser || !db) return;
+            const infoRef = doc(db, CONFIG_COLLECTION, 'schoolInfo');
+            onSnapshot(infoRef, (snap) => {
+                if(snap.exists()) {
+                    customTitle = snap.data().title || "";
+                    customLogo = snap.data().logoUrl || "";
+                } else {
+                    customTitle = "";
+                    customLogo = "";
+                }
+                updateSchoolInfoDOM();
+                if(isAdminLoggedIn) renderSchoolInfoInputs();
+            });
+        }
+
+        function updateSchoolInfoDOM() {
+            const titleStr = customTitle || "臺中市長安國小第十七屆";
+            document.getElementById('mainTitle1').innerHTML = titleStr + "<br>畢業祝福";
+            document.getElementById('mainTitle2').innerHTML = titleStr + " 畢業祝福牆";
+            document.title = titleStr + " - 畢業祝福牆";
+
+            const displayLogo = (idSvg, idImg) => {
+                const svgEl = document.getElementById(idSvg);
+                const imgEl = document.getElementById(idImg);
+                if(customLogo) {
+                    svgEl.style.display = 'none';
+                    imgEl.src = customLogo;
+                    imgEl.style.display = 'block';
+                } else {
+                    svgEl.style.display = 'block';
+                    imgEl.style.display = 'none';
+                    imgEl.src = '';
+                }
+            };
+            displayLogo('defaultLogo1', 'customLogo1');
+            displayLogo('defaultLogo2', 'customLogo2');
+        }
+
+        // 追蹤與顯示瀏覽人次
+        async function trackAndDisplayVisitor() {
+            if (!db || !currentUser) return;
+            const statsRef = doc(db, CONFIG_COLLECTION, 'stats');
+
+            // 1. 如果這台裝置沒有瀏覽過，則在資料庫增加 1 人次
+            const hasVisited = localStorage.getItem('changan_visited_v1');
+            if (!hasVisited) {
                 try {
-                    const res = await fetch(`${GOOGLE_SCRIPT_URL}?action=read`);
-                    const json = await res.json();
-                    return json.status === 'success' ? json.data : [];
-                } catch (e) { console.error(e); return []; }
-            },
-            addBlessing: async (data) => {
-                const payload = { ...data, id: Date.now().toString(), timestamp: new Date().toISOString() };
-                if (DEMO_MODE) {
-                    const current = await api.fetchBlessings();
-                    localStorage.setItem('demo_data', JSON.stringify([payload, ...current]));
-                    return { status: 'success' };
+                    // 使用 Firebase 內建的 increment 確保多人同時進入時不會算錯
+                    await setDoc(statsRef, { count: increment(1) }, { merge: true });
+                    localStorage.setItem('changan_visited_v1', 'true');
+                } catch (e) {
+                    console.error("更新瀏覽人次失敗:", e);
                 }
-                const formData = new URLSearchParams();
-                formData.append('action', 'create');
-                formData.append('data', JSON.stringify(payload));
-                await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: formData });
-                return { status: 'success' };
-            },
-            deleteBlessing: async (id) => {
-                if (DEMO_MODE) {
-                    const current = await api.fetchBlessings();
-                    localStorage.setItem('demo_data', JSON.stringify(current.filter(i => i.id !== id)));
-                    return;
+            }
+
+            // 2. 即時監聽資料庫中的人次並更新畫面
+            onSnapshot(statsRef, (snap) => {
+                const countDisplay = document.getElementById('visitorCountDisplay');
+                if (snap.exists() && snap.data().count) {
+                    countDisplay.innerText = `累積瀏覽人次：${snap.data().count}`;
+                } else {
+                    countDisplay.innerText = `累積瀏覽人次：1`;
                 }
-                const formData = new URLSearchParams();
-                formData.append('action', 'delete');
-                formData.append('id', id);
-                await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: formData });
-            },
-            updateBlessing: async (id, newData) => {
-                if (DEMO_MODE) {
-                    const current = await api.fetchBlessings();
-                    localStorage.setItem('demo_data', JSON.stringify(current.map(i => i.id === id ? { ...i, ...newData } : i)));
-                    return;
+                countDisplay.style.display = 'block';
+            });
+        }
+
+        function convertGoogleDriveUrl(url) {
+            if (!url) return url;
+            const match = url.match(/\/file\/d\/([a-zA-Z0-9_-]+)/) || url.match(/[?&]id=([a-zA-Z0-9_-]+)/);
+            if (match && match[1]) return `https://drive.google.com/uc?export=view&id=${match[1]}`;
+            return url;
+        }
+
+        function updateWallBackground() {
+            const carouselEl = document.getElementById('bg-carousel');
+            if (bgRotationInterval) clearInterval(bgRotationInterval);
+            
+            if(customBgUrls.length === 0) {
+                carouselEl.style.backgroundImage = 'none';
+                return;
+            }
+            if(currentBgIndex >= customBgUrls.length) currentBgIndex = 0;
+            
+            const displayUrl = convertGoogleDriveUrl(customBgUrls[currentBgIndex]);
+            carouselEl.style.backgroundImage = `url("${displayUrl}")`;
+            console.log("🖼️ 嘗試載入背景圖片:", displayUrl); // 幫助除錯
+
+            if(customBgUrls.length > 1) {
+                bgRotationInterval = setInterval(() => {
+                    currentBgIndex = (currentBgIndex + 1) % customBgUrls.length;
+                    const nextUrl = convertGoogleDriveUrl(customBgUrls[currentBgIndex]);
+                    carouselEl.style.backgroundImage = `url("${nextUrl}")`;
+                    console.log("🖼️ 切換背景圖片:", nextUrl); // 幫助除錯
+                }, 60000); 
+            }
+        }
+
+        // ================= 3. 資料庫操作 =================
+        function loadMessages() {
+            if (!currentUser || !db) return;
+            const msgCollection = collection(db, MSG_PATH);
+            onSnapshot(msgCollection, (snapshot) => {
+                const msgs = [];
+                snapshot.forEach((doc) => { msgs.push({ id: doc.id, ...doc.data() }); });
+                messagesData = msgs.sort((a, b) => b.timestamp - a.timestamp);
+                
+                if (window.location.hash !== '#submit') renderCarouselDOM();
+                if (isAdminLoggedIn) renderAdminTable();
+            });
+        }
+
+        document.getElementById('wishForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!db) return showToast("⚠️ 請先設定 Firebase！");
+            if (!currentUser) return showToast("連線中，請稍候");
+            
+            const btn = document.getElementById('submitBtn');
+            btn.disabled = true; btn.innerText = "傳送中...";
+            const newMsg = {
+                guestName: document.getElementById('guestName').value.trim(),
+                targetName: document.getElementById('targetName').value.trim(),
+                message: document.getElementById('message').value.trim(),
+                timestamp: Date.now()
+            };
+
+            try {
+                await addDoc(collection(db, MSG_PATH), newMsg);
+                showToast("🎉 祝福已成功送出！");
+                document.getElementById('wishForm').reset();
+            } catch (error) { showToast("送出失敗，請重試"); } 
+            finally { btn.disabled = false; btn.innerText = "送出祝福 🚀"; }
+        });
+
+        // ================= 4. 輪轉動畫邏輯 (Carousel) =================
+        function escapeHtml(unsafe) { return (unsafe || "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+
+        function renderCarouselDOM() {
+            const container = document.getElementById('carouselContainer');
+            if (messagesData.length === 0) {
+                container.innerHTML = `<div class="carousel-card active" style="text-align:center"><div class="msg">目前尚無祝福，快掃描左方 QR Code 搶頭香吧！</div></div>`;
+                return;
+            }
+            let html = '';
+            messagesData.forEach((msg, idx) => {
+                html += `
+                    <div class="carousel-card" id="card-${idx}">
+                        <div class="target">To: ${escapeHtml(msg.targetName)}</div>
+                        <div class="msg">${escapeHtml(msg.message).replace(/\n/g, '<br>')}</div>
+                        <div class="sender"><span class="sender-stamp">${escapeHtml(msg.guestName)}</span></div>
+                    </div>`;
+            });
+            container.innerHTML = html;
+            startCarousel();
+        }
+
+        function startCarousel() {
+            if(carouselInterval) clearInterval(carouselInterval);
+            if(messagesData.length === 0) return;
+            if(activeCardIndex >= messagesData.length) activeCardIndex = 0;
+            
+            const updateCards = () => {
+                document.querySelectorAll('.carousel-card').forEach(el => {
+                    if (el.classList.contains('active')) {
+                        el.classList.remove('active'); el.classList.add('exit');
+                    } else if (el.id !== `card-${activeCardIndex}`) {
+                        el.classList.remove('exit');
+                    }
+                });
+                const target = document.getElementById(`card-${activeCardIndex}`);
+                if(target) {
+                    if (target.classList.contains('exit')) {
+                        target.style.transition = 'none'; target.classList.remove('exit');
+                        void target.offsetWidth; target.style.transition = '';
+                    }
+                    target.classList.add('active'); 
                 }
-                const formData = new URLSearchParams();
-                formData.append('action', 'update');
-                formData.append('id', id);
-                formData.append('data', JSON.stringify(newData));
-                await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: formData });
-            },
-            login: async (pwd) => {
-                if (DEMO_MODE) return pwd === 'admin888';
-                const formData = new URLSearchParams();
-                formData.append('action', 'login');
-                formData.append('password', pwd);
-                const res = await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: formData });
-                const json = await res.json();
-                return json.success;
-            },
-            changePassword: async (newPwd) => {
-                 if (DEMO_MODE) return true;
-                 const formData = new URLSearchParams();
-                 formData.append('action', 'changePassword');
-                 formData.append('password', newPwd);
-                 await fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: formData });
-                 return true;
+            };
+            updateCards();
+
+            if(messagesData.length > 1) {
+                carouselInterval = setInterval(() => {
+                    activeCardIndex = (activeCardIndex + 1) % messagesData.length;
+                    updateCards();
+                }, 6000); 
+            }
+        }
+
+        // ================= 5. 管理員功能 =================
+        window.openAdminModal = () => { document.getElementById('adminModal').style.display = 'flex'; document.getElementById('adminPassword').value = ''; };
+        window.closeAdminModal = () => { document.getElementById('adminModal').style.display = 'none'; };
+
+        window.verifyLogin = async () => {
+            if(!currentUser || !db) return showToast("⚠️ 請先設定 Firebase！");
+            const input = document.getElementById('adminPassword').value;
+            try {
+                const snap = await getDoc(doc(db, CONFIG_COLLECTION, 'admin'));
+                const realPass = snap.exists() ? snap.data().password : '1234';
+                if(input === realPass) {
+                    isAdminLoggedIn = true;
+                    document.getElementById('loginSection').style.display = 'none';
+                    document.getElementById('adminPanel').style.display = 'block';
+                    renderAdminTable(); renderBgInputs(); renderSchoolInfoInputs();
+                    showToast("✅ 登入成功");
+                } else { showToast("❌ 密碼錯誤"); }
+            } catch(e) { showToast("發生錯誤"); }
+        };
+
+        window.changePassword = async () => {
+            if(!currentUser || !db) return;
+            const newPass = document.getElementById('newPassword').value.trim();
+            if(!newPass) return showToast("請輸入新密碼");
+            try {
+                await setDoc(doc(db, CONFIG_COLLECTION, 'admin'), { password: newPass });
+                showToast("✅ 密碼已更新"); document.getElementById('newPassword').value = '';
+            } catch(e) { showToast("修改失敗"); }
+        };
+
+        window.renderBgInputs = () => {
+            const container = document.getElementById('bgInputsContainer');
+            container.innerHTML = '';
+            for(let i=0; i<7; i++) {
+                const val = customBgUrls[i] || '';
+                container.innerHTML += `<div class="flex-row"><span style="width: 25px; color:#666;">${i+1}.</span><input type="text" id="bg-input-${i}" class="admin-input" placeholder="https://..." value="${val}"></div>`;
             }
         };
 
-        // --- 主程式元件 ---
-        function App() {
-            const [view, setView] = useState('menu');
-            const [isAdmin, setIsAdmin] = useState(false);
-
-            // 當畫面切換時，重新繪製 icon
-            useEffect(() => {
-                lucide.createIcons();
-            }, [view]);
-
-            return (
-                <div className="min-h-screen">
-                    {DEMO_MODE && view === 'menu' && (
-                        <div className="bg-yellow-100 text-yellow-800 p-2 text-center text-sm">
-                            ⚠️ 目前為展示模式，請在程式碼中填入 Google Script URL。
-                        </div>
-                    )}
-                    
-                    {view === 'menu' && <MenuView setView={setView} />}
-                    {view === 'form' && <FormView setView={setView} />}
-                    {view === 'display' && <DisplayView setView={setView} />}
-                    {view === 'adminLogin' && <AdminLoginView setView={setView} setIsAdmin={setIsAdmin} />}
-                    {view === 'admin' && (isAdmin ? <AdminDashboardView setView={setView} /> : <AdminLoginView setView={setView} setIsAdmin={setIsAdmin} />)}
-                </div>
-            );
-        }
-
-        // 1. 選單頁面
-        const MenuView = ({ setView }) => (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-blue-100 to-indigo-50 p-4">
-                <div className="bg-white p-8 rounded-2xl shadow-xl w-full max-w-md text-center border-t-8 border-blue-500">
-                    <div className="flex justify-center mb-4 text-blue-600">
-                        <i data-lucide="graduation-cap" width="64" height="64"></i>
-                    </div>
-                    <h1 className="text-3xl font-bold mb-2 text-slate-800">長安國小</h1>
-                    <h2 className="text-xl text-blue-600 mb-8 font-medium">畢業祝福留言板</h2>
-                    <div className="space-y-4">
-                        <button onClick={() => setView('form')} className="w-full py-4 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-xl shadow-md transition-all flex items-center justify-center gap-3 text-lg font-bold">
-                            <i data-lucide="pen-tool"></i> 我要寫祝福
-                        </button>
-                        <button onClick={() => setView('display')} className="w-full py-4 px-6 bg-amber-500 hover:bg-amber-600 text-white rounded-xl shadow-md transition-all flex items-center justify-center gap-3 text-lg font-bold">
-                            <i data-lucide="monitor"></i> 觀看祝福牆
-                        </button>
-                        <button onClick={() => setView('adminLogin')} className="w-full py-3 px-6 bg-white border-2 border-slate-200 hover:bg-slate-50 text-slate-600 rounded-xl transition-all flex items-center justify-center gap-2 mt-8">
-                            <i data-lucide="settings"></i> 管理員登入
-                        </button>
-                    </div>
-                    <p className="mt-8 text-slate-400 text-sm">© 2025 Chang'an Elementary School</p>
-                </div>
-            </div>
-        );
-
-        // 2. 表單頁面
-        const FormView = ({ setView }) => {
-            const [form, setForm] = useState({ sender: '', graduate: '', message: '' });
-            const [status, setStatus] = useState('idle');
-
-            const handleSubmit = async (e) => {
-                e.preventDefault();
-                setStatus('submitting');
-                await api.addBlessing(form);
-                setStatus('success');
-                setTimeout(() => { setStatus('idle'); setView('menu'); }, 2000);
-            };
-
-            return (
-                <div className="min-h-screen bg-blue-50 py-12 px-4">
-                    <div className="max-w-md mx-auto bg-white rounded-xl shadow-lg overflow-hidden">
-                        <div className="bg-blue-600 px-6 py-4 flex justify-between items-center text-white">
-                            <h2 className="text-xl font-bold flex items-center gap-2"><i data-lucide="pen-tool"></i> 填寫祝福</h2>
-                            <button onClick={() => setView('menu')}><i data-lucide="x"></i></button>
-                        </div>
-                        <div className="p-6">
-                            {status === 'success' ? (
-                                <div className="text-center py-12">
-                                    <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-green-100 mb-4 text-green-600">
-                                        <i data-lucide="send" width="32" height="32"></i>
-                                    </div>
-                                    <h3 className="text-lg font-medium">傳送成功！</h3>
-                                    <p className="text-gray-500 mt-2">您的祝福已送出。</p>
-                                </div>
-                            ) : (
-                                <form onSubmit={handleSubmit} className="space-y-6">
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">您的姓名 (來賓)</label>
-                                        <input required className="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 outline-none" 
-                                            value={form.sender} onChange={e => setForm({...form, sender: e.target.value})} placeholder="例如：王小明" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">畢業生姓名</label>
-                                        <input required className="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 outline-none" 
-                                            value={form.graduate} onChange={e => setForm({...form, graduate: e.target.value})} placeholder="例如：陳大寶" />
-                                    </div>
-                                    <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">祝福的話</label>
-                                        <textarea required rows="4" className="w-full px-4 py-3 rounded-lg border focus:ring-2 focus:ring-blue-500 outline-none resize-none" 
-                                            value={form.message} onChange={e => setForm({...form, message: e.target.value})} placeholder="寫下您最真誠的祝福..." />
-                                    </div>
-                                    <button disabled={status === 'submitting'} type="submit" className="w-full py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold disabled:opacity-50">
-                                        {status === 'submitting' ? '傳送中...' : '送出祝福'}
-                                    </button>
-                                </form>
-                            )}
-                        </div>
-                    </div>
-                </div>
-            );
+        window.saveBackgrounds = async () => {
+            if(!currentUser || !db) return;
+            const newUrls = [];
+            for(let i=0; i<7; i++) { newUrls.push(document.getElementById(`bg-input-${i}`).value.trim()); }
+            try {
+                await setDoc(doc(db, CONFIG_COLLECTION, 'backgrounds'), { urls: newUrls });
+                showToast("✅ 背景設定已儲存");
+            } catch(e) { showToast("儲存失敗"); }
         };
 
-        // 3. 展示頁面
-        const DisplayView = ({ setView }) => {
-            const [blessings, setBlessings] = useState([]);
-            const [loading, setLoading] = useState(true);
-
-            useEffect(() => {
-                const load = async () => {
-                    const data = await api.fetchBlessings();
-                    let displayData = data;
-                    if (data.length > 0 && data.length < 5) {
-                        displayData = [...data, ...data, ...data, ...data];
-                    } else if (data.length > 0) {
-                        displayData = [...data, ...data];
-                    }
-                    setBlessings(displayData);
-                    setLoading(false);
-                };
-                load();
-                const timer = setInterval(load, 15000);
-                return () => clearInterval(timer);
-            }, []);
-
-            const duration = Math.max(30, blessings.length * 4);
-
-            return (
-                <div className="h-screen w-full bg-slate-900 overflow-hidden relative flex flex-col font-sans">
-                    <div className="z-20 bg-gradient-to-b from-slate-900 to-transparent pt-6 pb-12 px-8 flex justify-between items-start shrink-0">
-                        <div>
-                            <h1 className="text-4xl md:text-5xl font-bold text-white tracking-wider flex items-center gap-4">
-                                <span className="text-yellow-400"><i data-lucide="graduation-cap" width="48" height="48"></i></span>
-                                長安國小 畢業祝福
-                            </h1>
-                            <p className="text-blue-300 mt-2 text-xl">鵬程萬里，珍重再見</p>
-                        </div>
-                        <button onClick={() => setView('menu')} className="text-white/30 hover:text-white bg-white/10 p-2 rounded-full"><i data-lucide="x"></i></button>
-                    </div>
-
-                    <div className="flex-1 overflow-hidden relative">
-                        {loading ? <div className="text-white/50 text-center mt-20 text-2xl">載入中...</div> : 
-                         blessings.length === 0 ? <div className="text-white/50 text-center mt-20 text-2xl">目前還沒有祝福...</div> : (
-                            <div className="marquee-container w-full max-w-5xl mx-auto px-4">
-                                <div className="marquee-content" style={{ animationDuration: `${duration}s` }}>
-                                    {blessings.map((item, i) => (
-                                        <div key={i} className="mb-8 p-8 bg-white/10 backdrop-blur-md rounded-2xl border-l-8 border-yellow-400 shadow-2xl mx-4">
-                                            <div className="flex justify-between items-end mb-4 border-b border-white/20 pb-4">
-                                                <span className="text-2xl text-blue-200 font-bold">致: {item.graduate} 同學</span>
-                                                <span className="text-lg text-yellow-400">From: {item.sender}</span>
-                                            </div>
-                                            <p className="text-3xl md:text-4xl text-white font-medium leading-relaxed drop-shadow-md">
-                                                {item.message}
-                                            </p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                    <div className="z-20 h-12 bg-gradient-to-t from-slate-900 to-transparent shrink-0"></div>
-                </div>
-            );
+        window.renderSchoolInfoInputs = () => {
+            document.getElementById('adminCustomTitle').value = customTitle;
+            document.getElementById('adminCustomLogo').value = customLogo;
         };
 
-        // 4. 管理員登入
-        const AdminLoginView = ({ setView, setIsAdmin }) => {
-            const [pwd, setPwd] = useState('');
-            const [error, setError] = useState('');
-            const [loading, setLoading] = useState(false);
-
-            const handleLogin = async (e) => {
-                e.preventDefault();
-                setLoading(true);
-                const ok = await api.login(pwd);
-                setLoading(false);
-                if (ok) { setIsAdmin(true); setView('admin'); } 
-                else { setError('密碼錯誤'); }
-            };
-
-            return (
-                <div className="min-h-screen bg-slate-100 flex items-center justify-center p-4">
-                    <div className="bg-white p-8 rounded-xl shadow-lg w-full max-w-sm">
-                        <h2 className="text-2xl font-bold text-center mb-6 text-slate-800">管理員登入</h2>
-                        <form onSubmit={handleLogin} className="space-y-4">
-                            <div className="relative">
-                                <span className="absolute left-3 top-3 text-gray-400"><i data-lucide="lock" width="20"></i></span>
-                                <input type="password" className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 outline-none" 
-                                    value={pwd} onChange={e => setPwd(e.target.value)} placeholder="輸入密碼" />
-                            </div>
-                            {error && <p className="text-red-500 text-sm text-center">{error}</p>}
-                            <button disabled={loading} className="w-full bg-slate-800 text-white py-2 rounded-lg hover:bg-slate-900 disabled:opacity-50">
-                                {loading ? '驗證中...' : '登入'}
-                            </button>
-                            <button type="button" onClick={() => setView('menu')} className="w-full text-slate-500 text-sm hover:underline">返回首頁</button>
-                        </form>
-                    </div>
-                </div>
-            );
+        window.saveSchoolInfo = async () => {
+            if(!currentUser || !db) return;
+            const newTitle = document.getElementById('adminCustomTitle').value.trim();
+            const newLogo = document.getElementById('adminCustomLogo').value.trim();
+            try {
+                await setDoc(doc(db, CONFIG_COLLECTION, 'schoolInfo'), { title: newTitle, logoUrl: newLogo });
+                showToast("✅ 學校資訊已儲存");
+            } catch(e) { showToast("儲存失敗"); }
         };
 
-        // 5. 管理後台 (關鍵修正區)
-        const AdminDashboardView = ({ setView }) => {
-            const [data, setData] = useState([]);
-            const [loading, setLoading] = useState(false);
-            const [editId, setEditId] = useState(null);
-            const [editForm, setEditForm] = useState({});
-            const [showPwdModal, setShowPwdModal] = useState(false);
-            const [newPwd, setNewPwd] = useState('');
-
-            const loadData = async () => {
-                setLoading(true);
-                const res = await api.fetchBlessings();
-                setData(res.sort((a,b) => new Date(b.timestamp) - new Date(a.timestamp)));
-                setLoading(false);
-            };
-
-            useEffect(() => { loadData(); }, []);
-
-            // 修正：當資料更新時，重新呼叫 lucide 渲染圖示
-            useEffect(() => {
-                if (!loading) {
-                    lucide.createIcons();
-                }
-            }, [data, loading, editId]);
-
-            const handleDelete = async (id) => {
-                if(!confirm('確定刪除這條祝福嗎？')) return;
-                setLoading(true);
-                await api.deleteBlessing(id);
-                await loadData();
-            };
-
-            const handleSave = async () => {
-                setLoading(true);
-                await api.updateBlessing(editId, { 
-                    sender: editForm.sender, 
-                    graduate: editForm.graduate, 
-                    message: editForm.message 
-                });
-                setEditId(null);
-                await loadData();
-            };
-
-            const handleChangePwd = async () => {
-                if(!newPwd) return;
-                await api.changePassword(newPwd);
-                alert('密碼修改成功');
-                setShowPwdModal(false);
-            };
-
-            return (
-                <div className="min-h-screen bg-slate-50">
-                    <header className="bg-white shadow px-6 py-4 flex justify-between items-center sticky top-0 z-10">
-                        <h1 className="text-xl font-bold flex items-center gap-2">
-                            <i data-lucide="settings"></i> 後台管理 
-                            {loading && <span className="text-sm text-blue-500 font-normal">(更新中...)</span>}
-                        </h1>
-                        <div className="flex gap-2">
-                            <button onClick={() => setShowPwdModal(true)} className="px-4 py-2 bg-slate-100 rounded hover:bg-slate-200 text-sm">修改密碼</button>
-                            <button onClick={() => setView('menu')} className="px-4 py-2 bg-red-50 text-red-600 rounded hover:bg-red-100 text-sm flex items-center gap-1">
-                                <i data-lucide="log-out" width="16"></i> 登出
-                            </button>
-                        </div>
-                    </header>
-                    <main className="max-w-6xl mx-auto p-6">
-                        <div className="bg-white rounded-xl shadow overflow-hidden">
-                            <table className="min-w-full divide-y divide-gray-200">
-                                <thead className="bg-gray-50">
-                                    <tr>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase w-1/6">來賓</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase w-1/6">畢業生</th>
-                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase w-1/2">內容</th>
-                                        <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase w-1/6">操作</th>
-                                    </tr>
-                                </thead>
-                                <tbody className="divide-y divide-gray-200">
-                                    {data.map(item => (
-                                        <tr key={item.id} className="hover:bg-slate-50 transition-colors">
-                                            {editId === item.id ? (
-                                                <>
-                                                    <td className="px-6 py-4"><input className="w-full border px-2 py-1 rounded focus:ring-2 focus:ring-blue-500 outline-none" value={editForm.sender} onChange={e=>setEditForm({...editForm, sender:e.target.value})} /></td>
-                                                    <td className="px-6 py-4"><input className="w-full border px-2 py-1 rounded focus:ring-2 focus:ring-blue-500 outline-none" value={editForm.graduate} onChange={e=>setEditForm({...editForm, graduate:e.target.value})} /></td>
-                                                    <td className="px-6 py-4"><input className="w-full border px-2 py-1 rounded focus:ring-2 focus:ring-blue-500 outline-none" value={editForm.message} onChange={e=>setEditForm({...editForm, message:e.target.value})} /></td>
-                                                    <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
-                                                        <button onClick={handleSave} className="bg-green-100 text-green-700 px-3 py-1 rounded hover:bg-green-200 text-sm font-bold flex items-center gap-1 inline-flex">
-                                                            <i data-lucide="save" width="14"></i> 儲存
-                                                        </button>
-                                                        <button onClick={()=>setEditId(null)} className="bg-gray-100 text-gray-700 px-3 py-1 rounded hover:bg-gray-200 text-sm font-bold flex items-center gap-1 inline-flex">
-                                                            <i data-lucide="x" width="14"></i> 取消
-                                                        </button>
-                                                    </td>
-                                                </>
-                                            ) : (
-                                                <>
-                                                    <td className="px-6 py-4">{item.sender}</td>
-                                                    <td className="px-6 py-4 text-blue-600">{item.graduate}</td>
-                                                    <td className="px-6 py-4 text-gray-600">{item.message}</td>
-                                                    <td className="px-6 py-4 text-right space-x-2 whitespace-nowrap">
-                                                        <button onClick={()=>{setEditId(item.id); setEditForm(item);}} className="bg-indigo-50 text-indigo-600 px-3 py-1 rounded hover:bg-indigo-100 text-sm font-bold flex items-center gap-1 inline-flex">
-                                                            <i data-lucide="edit" width="14"></i> 修改
-                                                        </button>
-                                                        <button onClick={()=>handleDelete(item.id)} className="bg-red-50 text-red-600 px-3 py-1 rounded hover:bg-red-100 text-sm font-bold flex items-center gap-1 inline-flex">
-                                                            <i data-lucide="trash-2" width="14"></i> 刪除
-                                                        </button>
-                                                    </td>
-                                                </>
-                                            )}
-                                        </tr>
-                                    ))}
-                                    {data.length === 0 && !loading && (
-                                        <tr><td colSpan="4" className="text-center py-10 text-gray-400">目前沒有祝福留言</td></tr>
-                                    )}
-                                </tbody>
-                            </table>
-                        </div>
-                    </main>
-                    {showPwdModal && (
-                        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50">
-                            <div className="bg-white p-6 rounded-xl shadow-2xl max-w-sm w-full">
-                                <h3 className="text-lg font-bold mb-4">修改密碼</h3>
-                                <input type="text" className="w-full border p-2 rounded mb-4" placeholder="新密碼" value={newPwd} onChange={e=>setNewPwd(e.target.value)} />
-                                <div className="flex justify-end gap-2">
-                                    <button onClick={()=>setShowPwdModal(false)} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded">取消</button>
-                                    <button onClick={handleChangePwd} className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700">確認</button>
-                                </div>
-                            </div>
-                        </div>
-                    )}
-                </div>
-            );
+        window.renderAdminTable = () => {
+            const tbody = document.getElementById('adminTableBody');
+            tbody.innerHTML = '';
+            messagesData.forEach(msg => {
+                const tr = document.createElement('tr');
+                tr.innerHTML = `<td>${escapeHtml(msg.guestName)}</td><td>${escapeHtml(msg.targetName)}</td><td>${escapeHtml(msg.message).substring(0, 15)}...</td><td><button class="btn-del" onclick="deleteMessage('${msg.id}')">刪除</button></td>`;
+                tbody.appendChild(tr);
+            });
         };
 
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
-    </script>
-</body>
-</html>
-        const root = ReactDOM.createRoot(document.getElementById('root'));
-        root.render(<App />);
+        window.deleteMessage = async (id) => {
+            if(!currentUser || !db) return;
+            if(!confirm("確定要刪除這筆留言嗎？")) return;
+            try {
+                await deleteDoc(doc(db, MSG_PATH, id));
+                showToast("🗑️ 已刪除留言");
+            } catch(e) { showToast("刪除失敗"); }
+        };
     </script>
 </body>
 </html>
